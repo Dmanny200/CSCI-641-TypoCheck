@@ -1,0 +1,41 @@
+============================================================
+  XGBoost — Evaluation Report
+============================================================
+
+  Accuracy  : 0.8266
+  Precision : 0.9740
+  Recall    : 0.8073
+  F1 Score  : 0.8829
+
+  Classification Report
+  ----------------------------------------
+                precision    recall  f1-score   support
+  
+        benign       0.53      0.91      0.67      2010
+     malicious       0.97      0.81      0.88      8547
+  
+      accuracy                           0.83     10557
+     macro avg       0.75      0.86      0.77     10557
+  weighted avg       0.89      0.83      0.84     10557
+
+  Confusion Matrix (rows=actual, cols=predicted)
+  ----------------------------------------
+                 Pred benign  Pred malicious
+  Actual benign         1826             184
+  Actual malicious      1647            6900
+
+  Feature Importances (high -> low)
+  ----------------------------------------
+   1. subdomain_count            0.3375  ####################
+   2. domain_length              0.2308  #############
+   3. min_lev_distance           0.0922  #####
+   4. digit_count                0.0821  ####
+   5. non_alnum_count            0.0646  ###
+   6. tld_risk_score             0.0515  ###
+   7. char_continuity_rate       0.0402  ##
+   8. digit_ratio                0.0299  #
+   9. hyphen_count               0.0281  #
+  10. entropy                    0.0232  #
+  11. vowel_consonant_ratio      0.0198  #
+
+============================================================

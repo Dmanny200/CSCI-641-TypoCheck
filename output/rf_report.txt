@@ -1,0 +1,41 @@
+============================================================
+  Random Forest — Evaluation Report
+============================================================
+
+  Accuracy  : 0.8444
+  Precision : 0.9547
+  Recall    : 0.8480
+  F1 Score  : 0.8982
+
+  Classification Report
+  ----------------------------------------
+                precision    recall  f1-score   support
+  
+        benign       0.56      0.83      0.67      2010
+     malicious       0.95      0.85      0.90      8547
+  
+      accuracy                           0.84     10557
+     macro avg       0.76      0.84      0.78     10557
+  weighted avg       0.88      0.84      0.85     10557
+
+  Confusion Matrix (rows=actual, cols=predicted)
+  ----------------------------------------
+                 Pred benign  Pred malicious
+  Actual benign         1666             344
+  Actual malicious      1299            7248
+
+  Feature Importances (high -> low)
+  ----------------------------------------
+   1. min_lev_distance           0.2214  #############
+   2. domain_length              0.2001  ############
+   3. entropy                    0.1764  ##########
+   4. subdomain_count            0.1208  #######
+   5. vowel_consonant_ratio      0.0647  ###
+   6. char_continuity_rate       0.0540  ###
+   7. tld_risk_score             0.0480  ##
+   8. digit_count                0.0389  ##
+   9. digit_ratio                0.0324  #
+  10. non_alnum_count            0.0266  #
+  11. hyphen_count               0.0167  #
+
+============================================================
