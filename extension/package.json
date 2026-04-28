@@ -1,0 +1,29 @@
+{
+  "name": "domain-threat-detector",
+  "displayName": "Domain Threat Detector",
+  "version": "0.1.0",
+  "description": "Automatically checks every domain you visit against local ML models for phishing and typosquatting.",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build"
+  },
+  "dependencies": {
+    "plasmo": "0.90.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.0.270",
+    "@types/node": "20.11.5",
+    "@types/react": "18.2.48",
+    "@types/react-dom": "18.2.18",
+    "typescript": "5.3.3"
+  },
+  "overrides": {
+    "@parcel/watcher": "2.5.1"
+  },
+  "manifest": {
+    "permissions": ["webNavigation", "storage", "tabs"],
+    "host_permissions": ["http://127.0.0.1:8000/*"]
+  }
+}

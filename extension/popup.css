@@ -1,0 +1,283 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 12px;
+  background: #fff;
+  color: #222;
+}
+
+.popup-root {
+  width: 400px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  border-top: 4px solid #aaa;
+}
+
+/* ── header ── */
+.header {
+  background: #2c3e50;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  letter-spacing: 0.3px;
+}
+
+/* ── tier banner ── */
+.banner {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.tier-label {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.domain-text {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+.conf-text {
+  font-size: 11px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+/* ── section titles ── */
+.section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #555;
+  padding: 8px 14px 3px;
+  border-top: 1px solid #eee;
+}
+
+/* ── model rows ── */
+.models {
+  padding: 2px 14px 6px;
+}
+
+.model-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 12px;
+}
+
+.model-name {
+  width: 110px;
+  color: #333;
+}
+
+.model-label {
+  width: 68px;
+  font-weight: 600;
+}
+
+.model-label.mal { color: #c0392b; }
+.model-label.ben { color: #27ae60; }
+
+.model-conf {
+  width: 46px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.model-thr {
+  color: #888;
+  font-size: 11px;
+}
+
+/* ── feature table ── */
+.feat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin: 2px 0 4px;
+}
+
+.feat-table th {
+  padding: 2px 6px 2px 14px;
+  text-align: left;
+  color: #777;
+  font-weight: 600;
+  font-size: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.feat-table td {
+  padding: 2px 6px 2px 14px;
+  vertical-align: middle;
+}
+
+.feat-table tr:hover td { background: #f8f8f8; }
+
+.feat-name { color: #333; width: 170px; }
+.feat-val  { text-align: right; font-variant-numeric: tabular-nums; width: 52px; }
+.feat-imp  { text-align: right; font-variant-numeric: tabular-nums; width: 40px; color: #666; }
+.feat-bar  { color: #2980b9; font-size: 9px; padding-left: 6px; letter-spacing: -1px; }
+
+/* ── whois ── */
+.whois-prompt {
+  padding: 8px 14px 10px;
+  border-top: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.whois-btn {
+  align-self: flex-start;
+  padding: 5px 12px;
+  background: #2c3e50;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.whois-btn:hover:not(:disabled) { background: #1a252f; }
+.whois-btn:disabled { opacity: 0.55; cursor: default; }
+
+.whois-err {
+  font-size: 11px;
+  color: #c0392b;
+}
+
+.whois-block {
+  padding: 4px 14px 8px;
+  border-top: 1px solid #eee;
+}
+
+.whois-na {
+  font-size: 11px;
+  color: #c0392b;
+  padding: 4px 0;
+}
+
+.tier-change {
+  font-size: 10px;
+  font-weight: 500;
+  color: #856404;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.whois-skipped {
+  padding: 6px 14px;
+  font-size: 11px;
+  color: #888;
+  border-top: 1px solid #eee;
+}
+
+.whois-unavail {
+  font-size: 11px;
+  color: #c0392b;
+  padding: 4px 0;
+}
+
+.whois-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.whois-table td {
+  padding: 2px 4px;
+}
+
+.whois-table td:first-child {
+  color: #555;
+  width: 160px;
+}
+
+.whois-reasons {
+  margin-top: 6px;
+}
+
+.reason {
+  font-size: 11px;
+  color: #444;
+  padding: 1px 0;
+}
+
+.tier-change {
+  margin-top: 6px;
+  font-size: 11px;
+}
+
+.tier-chip {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+  font-size: 10px;
+}
+
+/* ── states ── */
+.loading, .no-result {
+  padding: 24px 14px;
+  color: #888;
+  font-size: 12px;
+  text-align: center;
+}
+
+.error-block {
+  padding: 14px;
+  background: #fff5f5;
+  border-top: 1px solid #fdd;
+}
+
+.error-title {
+  font-weight: 700;
+  color: #c0392b;
+  margin-bottom: 4px;
+}
+
+.error-msg {
+  font-size: 11px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.error-hint {
+  font-size: 11px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.error-hint code {
+  display: block;
+  margin-top: 4px;
+  background: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-family: Consolas, monospace;
+}
+
+/* ── footer ── */
+.footer {
+  padding: 4px 14px 6px;
+  font-size: 10px;
+  color: #aaa;
+  border-top: 1px solid #f0f0f0;
+}

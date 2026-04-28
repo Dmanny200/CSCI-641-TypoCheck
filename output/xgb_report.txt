@@ -2,40 +2,90 @@
   XGBoost — Evaluation Report
 ============================================================
 
-  Accuracy  : 0.8266
-  Precision : 0.9740
-  Recall    : 0.8073
-  F1 Score  : 0.8829
+  [Default threshold = 0.50]
+  Accuracy  : 0.8409
+  Precision : 0.7522  (malicious class)
+  Recall    : 0.7007  (malicious class)
+  F1 Score  : 0.7255  (malicious class)
 
   Classification Report
   ----------------------------------------
                 precision    recall  f1-score   support
   
-        benign       0.53      0.91      0.67      2010
-     malicious       0.97      0.81      0.88      8547
+        benign       0.88      0.90      0.89      2010
+     malicious       0.75      0.70      0.73       862
   
-      accuracy                           0.83     10557
-     macro avg       0.75      0.86      0.77     10557
-  weighted avg       0.89      0.83      0.84     10557
+      accuracy                           0.84      2872
+     macro avg       0.81      0.80      0.81      2872
+  weighted avg       0.84      0.84      0.84      2872
 
   Confusion Matrix (rows=actual, cols=predicted)
   ----------------------------------------
                  Pred benign  Pred malicious
-  Actual benign         1826             184
-  Actual malicious      1647            6900
+  Actual benign         1811             199
+  Actual malicious       258             604
 
+------------------------------------------------------------
+  Tuned threshold = 0.80
+  (selected to maximise F1 on the benign class on the validation set,
+   reducing false positives — benign domains labelled malicious)
+------------------------------------------------------------
+
+  [Tuned threshold = 0.80]
+  Accuracy  : 0.8628
+  Precision : 0.9224  (malicious class)
+  Recall    : 0.5928  (malicious class)
+  F1 Score  : 0.7218  (malicious class)
+
+  Classification Report
+  ----------------------------------------
+                precision    recall  f1-score   support
+  
+        benign       0.85      0.98      0.91      2010
+     malicious       0.92      0.59      0.72       862
+  
+      accuracy                           0.86      2872
+     macro avg       0.89      0.79      0.82      2872
+  weighted avg       0.87      0.86      0.85      2872
+
+  Confusion Matrix (rows=actual, cols=predicted)
+  ----------------------------------------
+                 Pred benign  Pred malicious
+  Actual benign         1967              43
+  Actual malicious       351             511
+
+============================================================
+  Threshold Sweep (validation set, benign-class metrics)
+============================================================
+  Threshold  Prec(ben)  Rec(ben)  F1(ben)     FPR
+  ------------------------------------------------
+       0.30     0.8965    0.7151   0.7956  0.2849
+       0.35     0.8907    0.7698   0.8258  0.2302
+       0.40     0.8838    0.8324   0.8574  0.1676
+       0.45     0.8754    0.8732   0.8743  0.1268
+       0.50     0.8721    0.9015   0.8866  0.0985
+       0.55     0.8705    0.9229   0.8960  0.0771
+       0.60     0.8686    0.9403   0.9031  0.0597
+       0.65     0.8631    0.9528   0.9057  0.0472
+       0.70     0.8590    0.9602   0.9068  0.0398
+       0.75     0.8539    0.9707   0.9085  0.0293
+       0.80     0.8479    0.9816   0.9099  0.0184 <-- tuned
+       0.85     0.8419    0.9876   0.9089  0.0124
+       0.90     0.8340    0.9940   0.9070  0.0060
+
+============================================================
   Feature Importances (high -> low)
   ----------------------------------------
-   1. subdomain_count            0.3375  ####################
-   2. domain_length              0.2308  #############
-   3. min_lev_distance           0.0922  #####
-   4. digit_count                0.0821  ####
-   5. non_alnum_count            0.0646  ###
-   6. tld_risk_score             0.0515  ###
-   7. char_continuity_rate       0.0402  ##
-   8. digit_ratio                0.0299  #
-   9. hyphen_count               0.0281  #
-  10. entropy                    0.0232  #
-  11. vowel_consonant_ratio      0.0198  #
+   1. subdomain_count            0.3823  ######################
+   2. domain_length              0.2158  ############
+   3. non_alnum_count            0.0658  ###
+   4. digit_count                0.0529  ###
+   5. min_lev_distance           0.0526  ###
+   6. char_continuity_rate       0.0434  ##
+   7. entropy                    0.0396  ##
+   8. hyphen_count               0.0382  ##
+   9. tld_risk_score             0.0379  ##
+  10. vowel_consonant_ratio      0.0359  ##
+  11. digit_ratio                0.0356  ##
 
 ============================================================

@@ -12,3 +12,6 @@ threadpoolctl==3.6.0
 tqdm==4.67.3
 tzdata==2026.1
 xgboost==3.2.0
+python-whois
+fastapi
+uvicorn[standard]

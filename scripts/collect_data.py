@@ -468,6 +468,30 @@ def main() -> None:
     df = df.drop_duplicates(subset=["domain"], keep="first").reset_index(drop=True)
     print(f"  Removed {before - len(df):,} duplicate domain rows")
 
+    # ── rebalance to ~70% benign / 30% malicious ─────────────────────────
+    TARGET_BENIGN_FRAC = 0.70
+    TARGET_MAL_FRAC    = 0.30
+
+    df_benign    = df[df["label"] == 0]
+    df_malicious = df[df["label"] == 1]
+
+    n_benign_orig    = len(df_benign)
+    n_malicious_orig = len(df_malicious)
+    target_mal = int(n_benign_orig * TARGET_MAL_FRAC / TARGET_BENIGN_FRAC)
+
+    print(f"\nRebalancing: {n_benign_orig:,} benign, {n_malicious_orig:,} malicious")
+    if n_malicious_orig > target_mal:
+        df_malicious = df_malicious.sample(n=target_mal, random_state=RANDOM_SEED)
+        print(f"  Downsampled malicious: {n_malicious_orig:,} -> {target_mal:,} "
+              f"(to match 70/30 split with {n_benign_orig:,} benign samples)")
+    else:
+        print(f"  Malicious count ({n_malicious_orig:,}) already at or below target "
+              f"({target_mal:,}); no downsampling needed")
+
+    df = (pd.concat([df_benign, df_malicious])
+            .sample(frac=1, random_state=RANDOM_SEED)
+            .reset_index(drop=True))
+
     # ── summary ──────────────────────────────────────────────────────────
     print("\n" + "=" * 60)
     print("  Dataset summary")
@@ -483,9 +507,12 @@ def main() -> None:
         print(f"  {tag}  {row['source']:<30}  {row['count']:>7,}")
     print("-" * 60)
     label_counts = df["label"].value_counts().sort_index()
-    print(f"  Total benign:     {label_counts.get(0, 0):>7,}")
-    print(f"  Total malicious:  {label_counts.get(1, 0):>7,}")
-    print(f"  Grand total:      {len(df):>7,}")
+    n_benign  = label_counts.get(0, 0)
+    n_mal     = label_counts.get(1, 0)
+    n_total   = len(df)
+    print(f"  Total benign:     {n_benign:>7,}  ({100 * n_benign / n_total:.1f}%)")
+    print(f"  Total malicious:  {n_mal:>7,}  ({100 * n_mal / n_total:.1f}%)")
+    print(f"  Grand total:      {n_total:>7,}")
     print("=" * 60)
 
     # ── save ─────────────────────────────────────────────────────────────
