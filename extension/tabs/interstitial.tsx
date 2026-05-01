@@ -83,7 +83,7 @@ export default function Interstitial() {
   useEffect(() => {
     if (!displayDomain) { setPhase("error"); setErrMsg("Invalid URL"); return }
 
-    fetch(`http://127.0.0.1:8000/predict?domain=${encodeURIComponent(displayDomain)}`)
+    fetch(`http://127.0.0.1:8000/predict?url=${encodeURIComponent(target)}`)
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
       .then((data: Result) => {
         setResult(data)
@@ -126,7 +126,7 @@ export default function Interstitial() {
     if (!result) return
     setWhoisLoading(true)
     setWhoisError("")
-    fetch(`http://127.0.0.1:8000/whois?domain=${encodeURIComponent(result.domain)}`)
+    fetch(`http://127.0.0.1:8000/whois?url=${encodeURIComponent(target)}`)
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
       .then(setWhois)
       .catch(e => setWhoisError(e.message?.includes("fetch") ? "Server offline" : String(e)))

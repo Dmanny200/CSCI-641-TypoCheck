@@ -11,6 +11,7 @@ Artefacts saved:
   output/xgb_report.txt
 """
 
+import argparse
 import re
 from pathlib import Path
 
@@ -31,13 +32,11 @@ from xgboost import XGBClassifier
 # ── paths ────────────────────────────────────────────────────────────────────
 ROOT         = Path(__file__).resolve().parent.parent
 FEATURES_CSV = ROOT / "data"   / "features.csv"
-MODEL_PATH   = ROOT / "models" / "xgboost.joblib"
-REPORT_PATH  = ROOT / "output" / "xgb_report.txt"
-RF_REPORT    = ROOT / "output" / "rf_report.txt"
 
 RANDOM_SEED  = 42
 
 FEATURE_COLS = [
+    # ── domain-level ────────────────────────────────────────────────────
     "domain_length",
     "subdomain_count",
     "digit_count",
@@ -49,6 +48,17 @@ FEATURE_COLS = [
     "digit_ratio",
     "tld_risk_score",
     "min_lev_distance",
+    "homoglyph_count",
+    "bigram_log_prob",
+    # ── URL-level ────────────────────────────────────────────────────────
+    "url_length",
+    "path_length",
+    "path_depth",
+    "has_query",
+    "query_length",
+    "path_entropy",
+    "at_in_url",
+    "double_slash_in_path",
 ]
 
 THRESHOLDS = [round(0.30 + i * 0.05, 2) for i in range(13)]  # 0.30 … 0.90
@@ -97,9 +107,10 @@ def metrics_block(y_true, y_pred, label: str) -> list[str]:
         "  Classification Report",
         "  " + "-" * 40,
     ]
-    for line in classification_report(
-        y_true, y_pred, target_names=["benign", "malicious"]
-    ).splitlines():
+    report_str: str = classification_report(
+        y_true, y_pred, target_names=["benign", "malicious"], output_dict=False
+    )  # type: ignore[assignment]
+    for line in report_str.splitlines():
         lines.append("  " + line)
     lines += [
         "",
@@ -218,13 +229,25 @@ def print_comparison(rf_metrics: dict, xgb_metrics: dict) -> None:
 # ═══════════════════════════════════════════════════════════════════════════
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--features", default=str(FEATURES_CSV), help="Path to features CSV")
+    args = parser.parse_args()
+
+    features_path = Path(args.features)
+    tag = features_path.stem.replace("features", "").strip("_")
+    suffix = f"_{tag}" if tag else ""
+
+    model_path  = ROOT / "models" / f"xgboost{suffix}.joblib"
+    report_path = ROOT / "output" / f"xgb{suffix}_report.txt"
+    rf_report   = ROOT / "output" / f"rf{suffix}_report.txt"
+
     # ── load ─────────────────────────────────────────────────────────────
     print("Loading features ...")
-    df = pd.read_csv(FEATURES_CSV)
+    df = pd.read_csv(features_path)
     print(f"  {len(df):,} rows, {len(df.columns)} columns")
 
     X = df[FEATURE_COLS].values
-    y = df["label"].values
+    y = np.asarray(df["label"].values)
 
     # ── three-way split: 60% train / 20% val / 20% test ──────────────────
     X_tmp, X_test, y_tmp, y_test = train_test_split(
@@ -277,23 +300,23 @@ def main() -> None:
     print(report)
 
     # ── save model (bundled with tuned threshold) ─────────────────────────
-    MODEL_PATH.parent.mkdir(exist_ok=True)
+    model_path.parent.mkdir(exist_ok=True)
     # Saved as a dict so callers always load the right threshold atomically.
-    joblib.dump({"model": clf, "threshold": tuned_thr}, MODEL_PATH)
-    print(f"\nModel saved  -> {MODEL_PATH}  (threshold={tuned_thr:.2f})")
+    joblib.dump({"model": clf, "threshold": tuned_thr}, model_path)
+    print(f"\nModel saved  -> {model_path}  (threshold={tuned_thr:.2f})")
 
     # ── save report ───────────────────────────────────────────────────────
-    REPORT_PATH.parent.mkdir(exist_ok=True)
-    REPORT_PATH.write_text(report, encoding="utf-8")
-    print(f"Report saved -> {REPORT_PATH}")
+    report_path.parent.mkdir(exist_ok=True)
+    report_path.write_text(report, encoding="utf-8")
+    print(f"Report saved -> {report_path}")
 
     # ── side-by-side comparison (default threshold) ───────────────────────
-    if RF_REPORT.exists():
-        rf_metrics  = parse_metrics(RF_REPORT.read_text(encoding="utf-8"))
+    if rf_report.exists():
+        rf_metrics  = parse_metrics(rf_report.read_text(encoding="utf-8"))
         xgb_metrics = parse_metrics(report)
         print_comparison(rf_metrics, xgb_metrics)
     else:
-        print(f"\n[warn] {RF_REPORT} not found — skipping comparison table")
+        print(f"\n[warn] {rf_report} not found — skipping comparison table")
 
 
 if __name__ == "__main__":

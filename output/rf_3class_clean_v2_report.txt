@@ -1,0 +1,29 @@
+=================================================================
+  Random Forest — 3-Class Evaluation Report
+=================================================================
+  Accuracy: 0.9120
+
+  3-class Confusion Matrix [Random Forest]
+  (rows = actual, cols = predicted)
+                         Pred Benign  Pred Phishing  Pred Typo/DGA
+  -----------------------------------------------------------------
+  Actual Benign           26,058            357          1,546
+  Actual Phishing            705          7,734             40
+  Actual Typo/DGA            867              0          2,638
+
+  Per-class recall:
+    Benign          93.2%
+    Phishing        91.2%
+    Typo/DGA        75.3%
+
+                precision    recall  f1-score   support
+  
+        Benign       0.94      0.93      0.94     27961
+      Phishing       0.96      0.91      0.93      8479
+      Typo/DGA       0.62      0.75      0.68      3505
+  
+      accuracy                           0.91     39945
+     macro avg       0.84      0.87      0.85     39945
+  weighted avg       0.92      0.91      0.91     39945
+
+=================================================================

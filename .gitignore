@@ -24,3 +24,6 @@ Thumbs.db
 node_modules/
 extension/dist/
 extension/.plasmo/
+
+/data 
+*.joblib

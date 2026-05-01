@@ -1,0 +1,101 @@
+============================================================
+  XGBoost — Evaluation Report
+============================================================
+
+  [Default threshold = 0.50]
+  Accuracy  : 0.9123
+  Precision : 0.8550  (malicious class)
+  Recall    : 0.8520  (malicious class)
+  F1 Score  : 0.8535  (malicious class)
+
+  Classification Report
+  ----------------------------------------
+                precision    recall  f1-score   support
+  
+        benign       0.94      0.94      0.94     27961
+     malicious       0.86      0.85      0.85     11984
+  
+      accuracy                           0.91     39945
+     macro avg       0.90      0.90      0.90     39945
+  weighted avg       0.91      0.91      0.91     39945
+
+  Confusion Matrix (rows=actual, cols=predicted)
+  ----------------------------------------
+                 Pred benign  Pred malicious
+  Actual benign        26230            1731
+  Actual malicious      1774           10210
+
+------------------------------------------------------------
+  Tuned threshold = 0.70
+  (selected to maximise F1 on the benign class on the validation set,
+   reducing false positives — benign domains labelled malicious)
+------------------------------------------------------------
+
+  [Tuned threshold = 0.70]
+  Accuracy  : 0.9163
+  Precision : 0.9402  (malicious class)
+  Recall    : 0.7701  (malicious class)
+  F1 Score  : 0.8467  (malicious class)
+
+  Classification Report
+  ----------------------------------------
+                precision    recall  f1-score   support
+  
+        benign       0.91      0.98      0.94     27961
+     malicious       0.94      0.77      0.85     11984
+  
+      accuracy                           0.92     39945
+     macro avg       0.92      0.87      0.89     39945
+  weighted avg       0.92      0.92      0.91     39945
+
+  Confusion Matrix (rows=actual, cols=predicted)
+  ----------------------------------------
+                 Pred benign  Pred malicious
+  Actual benign        27374             587
+  Actual malicious      2755            9229
+
+============================================================
+  Threshold Sweep (validation set, benign-class metrics)
+============================================================
+  Threshold  Prec(ben)  Rec(ben)  F1(ben)     FPR
+  ------------------------------------------------
+       0.30     0.9657    0.8210   0.8875  0.1790
+       0.35     0.9582    0.8601   0.9065  0.1399
+       0.40     0.9507    0.8929   0.9209  0.1071
+       0.45     0.9435    0.9176   0.9304  0.0824
+       0.50     0.9366    0.9349   0.9358  0.0651
+       0.55     0.9304    0.9489   0.9396  0.0511
+       0.60     0.9236    0.9613   0.9420  0.0387
+       0.65     0.9160    0.9711   0.9427  0.0289
+       0.70     0.9095    0.9791   0.9430  0.0209 <-- tuned
+       0.75     0.9019    0.9848   0.9415  0.0152
+       0.80     0.8928    0.9898   0.9388  0.0102
+       0.85     0.8833    0.9937   0.9353  0.0063
+       0.90     0.8709    0.9966   0.9296  0.0034
+
+============================================================
+  Feature Importances (high -> low)
+  ----------------------------------------
+   1. subdomain_count            0.1195  #######
+   2. char_continuity_rate       0.1081  ######
+   3. non_alnum_count            0.0805  ####
+   4. path_depth                 0.0672  ####
+   5. tld_risk_score             0.0643  ###
+   6. min_lev_distance           0.0613  ###
+   7. at_in_url                  0.0554  ###
+   8. path_length                0.0549  ###
+   9. domain_length              0.0548  ###
+  10. path_entropy               0.0491  ##
+  11. hyphen_count               0.0468  ##
+  12. digit_count                0.0405  ##
+  13. url_length                 0.0402  ##
+  14. bigram_log_prob            0.0349  ##
+  15. has_query                  0.0202  #
+  16. entropy                    0.0202  #
+  17. vowel_consonant_ratio      0.0194  #
+  18. digit_ratio                0.0187  #
+  19. query_length               0.0182  #
+  20. homoglyph_count            0.0158  
+  21. double_slash_in_path       0.0101  
+
+============================================================

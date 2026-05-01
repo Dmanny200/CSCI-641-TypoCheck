@@ -1,0 +1,99 @@
+============================================================
+  XGBoost — Evaluation Report
+============================================================
+
+  [Default threshold = 0.50]
+  Accuracy  : 0.9072
+  Precision : 0.8495  (malicious class)
+  Recall    : 0.8392  (malicious class)
+  F1 Score  : 0.8443  (malicious class)
+
+  Classification Report
+  ----------------------------------------
+                precision    recall  f1-score   support
+  
+        benign       0.93      0.94      0.93     33820
+     malicious       0.85      0.84      0.84     14494
+  
+      accuracy                           0.91     48314
+     macro avg       0.89      0.89      0.89     48314
+  weighted avg       0.91      0.91      0.91     48314
+
+  Confusion Matrix (rows=actual, cols=predicted)
+  ----------------------------------------
+                 Pred benign  Pred malicious
+  Actual benign        31665            2155
+  Actual malicious      2330           12164
+
+------------------------------------------------------------
+  Tuned threshold = 0.70
+  (selected to maximise F1 on the benign class on the validation set,
+   reducing false positives — benign domains labelled malicious)
+------------------------------------------------------------
+
+  [Tuned threshold = 0.70]
+  Accuracy  : 0.9152
+  Precision : 0.9459  (malicious class)
+  Recall    : 0.7607  (malicious class)
+  F1 Score  : 0.8433  (malicious class)
+
+  Classification Report
+  ----------------------------------------
+                precision    recall  f1-score   support
+  
+        benign       0.91      0.98      0.94     33820
+     malicious       0.95      0.76      0.84     14494
+  
+      accuracy                           0.92     48314
+     macro avg       0.93      0.87      0.89     48314
+  weighted avg       0.92      0.92      0.91     48314
+
+  Confusion Matrix (rows=actual, cols=predicted)
+  ----------------------------------------
+                 Pred benign  Pred malicious
+  Actual benign        33189             631
+  Actual malicious      3468           11026
+
+============================================================
+  Threshold Sweep (validation set, benign-class metrics)
+============================================================
+  Threshold  Prec(ben)  Rec(ben)  F1(ben)     FPR
+  ------------------------------------------------
+       0.30     0.9621    0.8151   0.8825  0.1849
+       0.35     0.9551    0.8533   0.9013  0.1467
+       0.40     0.9488    0.8842   0.9153  0.1158
+       0.45     0.9408    0.9127   0.9265  0.0873
+       0.50     0.9337    0.9349   0.9343  0.0651
+       0.55     0.9267    0.9518   0.9391  0.0482
+       0.60     0.9205    0.9629   0.9412  0.0371
+       0.65     0.9133    0.9724   0.9419  0.0276
+       0.70     0.9062    0.9813   0.9423  0.0187 <-- tuned
+       0.75     0.8995    0.9867   0.9411  0.0133
+       0.80     0.8935    0.9914   0.9399  0.0086
+       0.85     0.8866    0.9947   0.9375  0.0053
+       0.90     0.8771    0.9970   0.9332  0.0030
+
+============================================================
+  Feature Importances (high -> low)
+  ----------------------------------------
+   1. subdomain_count            0.2812  ################
+   2. tld_risk_score             0.0796  ####
+   3. char_continuity_rate       0.0764  ####
+   4. path_entropy               0.0648  ###
+   5. at_in_url                  0.0562  ###
+   6. path_length                0.0537  ###
+   7. min_lev_distance           0.0495  ##
+   8. hyphen_count               0.0442  ##
+   9. domain_length              0.0426  ##
+  10. path_depth                 0.0419  ##
+  11. url_length                 0.0370  ##
+  12. digit_count                0.0321  #
+  13. non_alnum_count            0.0284  #
+  14. digit_ratio                0.0261  #
+  15. vowel_consonant_ratio      0.0196  #
+  16. query_length               0.0187  #
+  17. has_query                  0.0187  #
+  18. entropy                    0.0177  #
+  19. double_slash_in_path       0.0117  
+
+============================================================

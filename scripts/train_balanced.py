@@ -10,6 +10,7 @@ XGBoost on it.  Reports are written to:
   output/balanced_comparison.txt   ← side-by-side vs. original imbalanced run
 """
 
+import argparse
 from pathlib import Path
 
 import joblib
@@ -33,12 +34,10 @@ FEATURES_CSV = ROOT / "data"   / "features.csv"
 OUT          = ROOT / "output"
 OUT.mkdir(exist_ok=True)
 
-RF_ORIG_REPORT  = OUT / "rf_report.txt"
-XGB_ORIG_REPORT = OUT / "xgb_report.txt"
-
 RANDOM_SEED = 42
 
 FEATURE_COLS = [
+    # ── domain-level ────────────────────────────────────────────────────
     "domain_length",
     "subdomain_count",
     "digit_count",
@@ -50,6 +49,17 @@ FEATURE_COLS = [
     "digit_ratio",
     "tld_risk_score",
     "min_lev_distance",
+    "homoglyph_count",
+    "bigram_log_prob",
+    # ── URL-level ────────────────────────────────────────────────────────
+    "url_length",
+    "path_length",
+    "path_depth",
+    "has_query",
+    "query_length",
+    "path_entropy",
+    "at_in_url",
+    "double_slash_in_path",
 ]
 
 THRESHOLDS = [round(0.30 + i * 0.05, 2) for i in range(13)]
@@ -247,8 +257,19 @@ def run_xgb(X_train, y_train, X_val, y_val, X_test, y_test):
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    print("Loading features.csv ...")
-    df = pd.read_csv(FEATURES_CSV)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--features", default=str(FEATURES_CSV), help="Path to features CSV")
+    args = parser.parse_args()
+
+    features_path = Path(args.features)
+    tag = features_path.stem.replace("features", "").strip("_")
+    suffix = f"_{tag}" if tag else ""
+
+    rf_orig_report  = OUT / f"rf{suffix}_report.txt"
+    xgb_orig_report = OUT / f"xgb{suffix}_report.txt"
+
+    print(f"Loading {features_path.name} ...")
+    df = pd.read_csv(features_path)
     n_mal = int((df.label == 1).sum())
     n_ben = int((df.label == 0).sum())
     print(f"  Full dataset: {n_ben:,} benign  |  {n_mal:,} malicious")
@@ -274,22 +295,22 @@ def main():
     # ── Random Forest ─────────────────────────────────────────────────────
     print("\nTraining Random Forest on balanced data ...")
     rf_report, rf_bundle = run_rf(X_train, y_train, X_val, y_val, X_test, y_test)
-    rf_path = OUT / "rf_balanced_report.txt"
+    rf_path = OUT / f"rf{suffix}_balanced_report.txt"
     rf_path.write_text(rf_report, encoding="utf-8")
-    joblib.dump(rf_bundle, ROOT / "models" / "random_forest_balanced.joblib")
+    joblib.dump(rf_bundle, ROOT / "models" / f"random_forest{suffix}_balanced.joblib")
     print(rf_report)
 
     # ── XGBoost ───────────────────────────────────────────────────────────
     print("\nTraining XGBoost on balanced data ...")
     xgb_report, xgb_bundle = run_xgb(X_train, y_train, X_val, y_val, X_test, y_test)
-    xgb_path = OUT / "xgb_balanced_report.txt"
+    xgb_path = OUT / f"xgb{suffix}_balanced_report.txt"
     xgb_path.write_text(xgb_report, encoding="utf-8")
-    joblib.dump(xgb_bundle, ROOT / "models" / "xgboost_balanced.joblib")
+    joblib.dump(xgb_bundle, ROOT / "models" / f"xgboost{suffix}_balanced.joblib")
     print(xgb_report)
 
     # ── comparison ────────────────────────────────────────────────────────
-    rf_orig_m  = parse_metrics(RF_ORIG_REPORT.read_text(encoding="utf-8"))  if RF_ORIG_REPORT.exists()  else {}
-    xgb_orig_m = parse_metrics(XGB_ORIG_REPORT.read_text(encoding="utf-8")) if XGB_ORIG_REPORT.exists() else {}
+    rf_orig_m  = parse_metrics(rf_orig_report.read_text(encoding="utf-8"))  if rf_orig_report.exists()  else {}
+    xgb_orig_m = parse_metrics(xgb_orig_report.read_text(encoding="utf-8")) if xgb_orig_report.exists() else {}
     rf_bal_m   = parse_metrics(rf_report)
     xgb_bal_m  = parse_metrics(xgb_report)
 
@@ -297,8 +318,9 @@ def main():
         comp = build_comparison(rf_orig_m, rf_bal_m, xgb_orig_m, xgb_bal_m)
         print()
         print(comp)
-        (OUT / "balanced_comparison.txt").write_text(comp, encoding="utf-8")
-        print(f"\nComparison saved -> {OUT / 'balanced_comparison.txt'}")
+        comp_path = OUT / f"balanced{suffix}_comparison.txt"
+        comp_path.write_text(comp, encoding="utf-8")
+        print(f"\nComparison saved -> {comp_path}")
 
     print(f"\nRF  report -> {rf_path}  (threshold={rf_bundle['threshold']:.2f})")
     print(f"XGB report -> {xgb_path}  (threshold={xgb_bundle['threshold']:.2f})")

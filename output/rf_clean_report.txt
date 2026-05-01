@@ -1,0 +1,99 @@
+============================================================
+  Random Forest — Evaluation Report
+============================================================
+
+  [Default threshold = 0.50]
+  Accuracy  : 0.9018
+  Precision : 0.8411  (malicious class)
+  Recall    : 0.8293  (malicious class)
+  F1 Score  : 0.8351  (malicious class)
+
+  Classification Report
+  ----------------------------------------
+                precision    recall  f1-score   support
+  
+        benign       0.93      0.93      0.93     27961
+     malicious       0.84      0.83      0.84     11984
+  
+      accuracy                           0.90     39945
+     macro avg       0.88      0.88      0.88     39945
+  weighted avg       0.90      0.90      0.90     39945
+
+  Confusion Matrix (rows=actual, cols=predicted)
+  ----------------------------------------
+                 Pred benign  Pred malicious
+  Actual benign        26083            1878
+  Actual malicious      2046            9938
+
+------------------------------------------------------------
+  Tuned threshold = 0.65
+  (selected to maximise F1 on the benign class on the validation set,
+   reducing false positives — benign domains labelled malicious)
+------------------------------------------------------------
+
+  [Tuned threshold = 0.65]
+  Accuracy  : 0.9076
+  Precision : 0.9330  (malicious class)
+  Recall    : 0.7456  (malicious class)
+  F1 Score  : 0.8288  (malicious class)
+
+  Classification Report
+  ----------------------------------------
+                precision    recall  f1-score   support
+  
+        benign       0.90      0.98      0.94     27961
+     malicious       0.93      0.75      0.83     11984
+  
+      accuracy                           0.91     39945
+     macro avg       0.92      0.86      0.88     39945
+  weighted avg       0.91      0.91      0.90     39945
+
+  Confusion Matrix (rows=actual, cols=predicted)
+  ----------------------------------------
+                 Pred benign  Pred malicious
+  Actual benign        27319             642
+  Actual malicious      3049            8935
+
+============================================================
+  Threshold Sweep (validation set, benign-class metrics)
+============================================================
+  Threshold  Prec(ben)  Rec(ben)  F1(ben)     FPR
+  ------------------------------------------------
+       0.30     0.9608    0.8091   0.8785  0.1909
+       0.35     0.9530    0.8492   0.8981  0.1508
+       0.40     0.9450    0.8834   0.9132  0.1166
+       0.45     0.9366    0.9076   0.9218  0.0924
+       0.50     0.9276    0.9320   0.9298  0.0680
+       0.55     0.9191    0.9474   0.9330  0.0526
+       0.60     0.9092    0.9649   0.9362  0.0351
+       0.65     0.9006    0.9753   0.9365  0.0247 <-- tuned
+       0.70     0.8919    0.9837   0.9356  0.0163
+       0.75     0.8827    0.9894   0.9330  0.0106
+       0.80     0.8738    0.9938   0.9299  0.0062
+       0.85     0.8616    0.9968   0.9243  0.0032
+       0.90     0.8476    0.9986   0.9169  0.0014
+
+============================================================
+  Feature Importances (high -> low)
+  ----------------------------------------
+   1. min_lev_distance           0.1222  #######
+   2. char_continuity_rate       0.1184  #######
+   3. entropy                    0.1040  ######
+   4. url_length                 0.0851  #####
+   5. path_length                0.0767  ####
+   6. domain_length              0.0750  ####
+   7. path_entropy               0.0700  ####
+   8. vowel_consonant_ratio      0.0668  ####
+   9. subdomain_count            0.0661  ###
+  10. tld_risk_score             0.0632  ###
+  11. non_alnum_count            0.0342  ##
+  12. path_depth                 0.0326  #
+  13. hyphen_count               0.0309  #
+  14. digit_ratio                0.0224  #
+  15. digit_count                0.0172  #
+  16. query_length               0.0097  
+  17. has_query                  0.0030  
+  18. at_in_url                  0.0023  
+  19. double_slash_in_path       0.0002  
+
+============================================================

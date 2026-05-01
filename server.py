@@ -11,20 +11,19 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-import pandas as pd
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.concurrency import run_in_threadpool
 
 from domain_checker import (
     FEATURE_COLS, WHOIS_BAND_LO,
-    load_model, run_inference, risk_tier, whois_features, adjust_tier, get_sld,
+    load_model, run_inference, risk_tier, whois_features, adjust_tier,
+    get_hostname, get_tld, is_known_safe,
 )
 
-ROOT         = Path(__file__).resolve().parent
-FEATURES_CSV = ROOT / "data"   / "features.csv"
-RF_MODEL     = ROOT / "models" / "random_forest.joblib"
-XGB_MODEL    = ROOT / "models" / "xgboost.joblib"
+ROOT      = Path(__file__).resolve().parent
+RF_MODEL  = ROOT / "models" / "random_forest_clean_v2.joblib"
+XGB_MODEL = ROOT / "models" / "xgboost_clean_v2.joblib"
 
 # ── cache ─────────────────────────────────────────────────────────────────────
 
@@ -56,46 +55,73 @@ def _cache_set(store: dict[str, _Entry], key: str, data: dict, ttl: timedelta) -
 
 
 # Domains pre-warmed at startup so first visits are instant.
-PREWARM_DOMAINS = [
+PREWARM_URLS = [
     # ── major benign sites ────────────────────────────────────────────────
-    "google.com", "youtube.com", "facebook.com", "instagram.com",
-    "twitter.com", "x.com", "reddit.com", "wikipedia.org",
-    "amazon.com", "ebay.com", "etsy.com", "walmart.com",
-    "netflix.com", "spotify.com", "twitch.tv", "tiktok.com",
-    "apple.com", "microsoft.com", "github.com", "stackoverflow.com",
-    "linkedin.com", "discord.com", "slack.com", "zoom.us",
-    "paypal.com", "chase.com", "bankofamerica.com", "wellsfargo.com",
-    "cnn.com", "bbc.com", "nytimes.com", "theguardian.com",
-    "cloudflare.com", "dropbox.com", "notion.so", "figma.com",
+    "https://google.com/", "https://youtube.com/", "https://facebook.com/",
+    "https://instagram.com/", "https://twitter.com/", "https://x.com/",
+    "https://reddit.com/", "https://wikipedia.org/",
+    "https://amazon.com/", "https://ebay.com/", "https://etsy.com/",
+    "https://walmart.com/", "https://netflix.com/", "https://spotify.com/",
+    "https://twitch.tv/", "https://tiktok.com/",
+    "https://apple.com/", "https://microsoft.com/", "https://github.com/",
+    "https://stackoverflow.com/", "https://linkedin.com/",
+    "https://discord.com/", "https://slack.com/", "https://zoom.us/",
+    "https://paypal.com/", "https://chase.com/", "https://bankofamerica.com/",
+    "https://wellsfargo.com/", "https://cnn.com/", "https://bbc.com/",
+    "https://nytimes.com/", "https://theguardian.com/",
+    "https://cloudflare.com/", "https://dropbox.com/",
+    "https://notion.so/", "https://figma.com/",
     # ── common phishing / typosquat targets ──────────────────────────────
-    "g00gle.com", "gooogle.com", "googie.com", "gogle.com",
-    "arnazon.com", "amaz0n.com", "amazonn.com",
-    "paypa1.com", "paypai.com", "paypaI.com",
-    "micros0ft.com", "micosoft.com", "microsofft.com",
-    "faceb00k.com", "facebok.com", "faceboook.com",
-    "netfl1x.com", "netfllx.com",
-    "appleid-verify.com", "apple-support-login.com",
-    "secure-paypal-login.com", "paypal-secure-login.com",
-    "amazon-security-alert.com", "amazon-prime-verify.com",
-    "login-microsoft-secure.com", "microsoft-account-verify.com",
-    "bankofamerica-secure.com", "chase-secure-login.com",
+    "http://g00gle.com/", "http://gooogle.com/", "http://googie.com/",
+    "http://gogle.com/", "http://arnazon.com/", "http://amaz0n.com/",
+    "http://paypa1.com/", "http://micros0ft.com/", "http://faceb00k.com/",
+    "http://netfl1x.com/", "http://appleid-verify.com/",
+    "http://secure-paypal-login.com/", "http://amazon-security-alert.com/",
+    "http://login-microsoft-secure.com/", "http://bankofamerica-secure.com/",
 ]
 
 
-def _prewarm(domains: list[str]) -> None:
-    """Run inference on each domain and populate the predict cache."""
+def _safe_payload(url: str) -> dict:
+    """Return a pre-built ALLOW payload for allowlisted domains."""
+    from domain_checker import get_hostname
+    return {
+        "url":            url,
+        "domain":         get_hostname(url),
+        "rf_conf":        0.0,
+        "rf_label":       "benign",
+        "rf_threshold":   0.5,
+        "xgb_conf":       0.0,
+        "xgb_label":      "benign",
+        "xgb_threshold":  0.5,
+        "max_conf":       0.0,
+        "ml_tier":        "ALLOW",
+        "final_tier":     "ALLOW",
+        "features":       [],
+        "whois_eligible": False,
+        "allowlisted":    True,
+        "cached":         True,
+    }
+
+
+def _prewarm(urls: list[str]) -> None:
+    """Run inference on each URL and populate the predict cache."""
     hits = 0
-    for domain in domains:
+    for url in urls:
         try:
+            if is_known_safe(url):
+                _cache_set(_predict_cache, url, _safe_payload(url), PREDICT_TTL)
+                hits += 1
+                continue
+
             feat, rf_conf, xgb_conf = run_inference(
-                domain, state.top100_slds,
+                url,
                 state.rf_clf, state.rf_thr,
                 state.xgb_clf, state.xgb_thr,
             )
             rf_label  = "malicious" if rf_conf  >= state.rf_thr  else "benign"
             xgb_label = "malicious" if xgb_conf >= state.xgb_thr else "benign"
             max_conf  = max(rf_conf, xgb_conf)
-            ml_tier   = risk_tier(max_conf)
+            ml_tier   = risk_tier(max_conf, get_tld(get_hostname(url)))
             avg_imp   = {f: float(state.rf_imps[f] + state.xgb_imps[f]) / 2 for f in FEATURE_COLS}
             features  = [
                 {
@@ -108,7 +134,7 @@ def _prewarm(domains: list[str]) -> None:
                 for f in sorted(FEATURE_COLS, key=lambda f: avg_imp[f], reverse=True)
             ]
             payload = {
-                "domain":         domain,
+                "url":            url,
                 "rf_conf":        round(rf_conf, 4),
                 "rf_label":       rf_label,
                 "rf_threshold":   state.rf_thr,
@@ -122,11 +148,11 @@ def _prewarm(domains: list[str]) -> None:
                 "whois_eligible": max_conf >= WHOIS_BAND_LO,
                 "cached":         True,
             }
-            _cache_set(_predict_cache, domain, payload, PREDICT_TTL)
+            _cache_set(_predict_cache, url, payload, PREDICT_TTL)
             hits += 1
         except Exception:
             pass
-    print(f"Cache pre-warm complete: {hits}/{len(domains)} domains cached")
+    print(f"Cache pre-warm complete: {hits}/{len(urls)} URLs cached")
 
 
 # ── app state ─────────────────────────────────────────────────────────────────
@@ -136,7 +162,6 @@ class State:
     xgb_clf = None; xgb_thr: float = 0.5
     rf_imps:  dict = {}
     xgb_imps: dict = {}
-    top100_slds: list[str] = []
 
 state = State()
 
@@ -147,15 +172,11 @@ async def lifespan(app: FastAPI):
     state.xgb_clf, state.xgb_thr = load_model(XGB_MODEL)
     state.rf_imps  = dict(zip(FEATURE_COLS, state.rf_clf.feature_importances_))
     state.xgb_imps = dict(zip(FEATURE_COLS, state.xgb_clf.feature_importances_))
-
-    df = pd.read_csv(FEATURES_CSV, dtype=str)
-    tranco = df[df["source"] == "tranco_top10k"]["domain"]
-    state.top100_slds = [get_sld(d) for d in tranco.head(100)]
     print("Models loaded. Listening on http://127.0.0.1:8000")
 
     # Pre-warm cache in background — doesn't block the server from accepting requests
-    threading.Thread(target=_prewarm, args=(PREWARM_DOMAINS,), daemon=True).start()
-    print(f"Pre-warming cache for {len(PREWARM_DOMAINS)} domains in background...")
+    threading.Thread(target=_prewarm, args=(PREWARM_URLS,), daemon=True).start()
+    print(f"Pre-warming cache for {len(PREWARM_URLS)} URLs in background...")
 
     yield
 
@@ -182,26 +203,37 @@ def health():
 
 
 @app.get("/predict")
-async def predict(domain: str = Query(...)):
-    domain = domain.strip().lower()
-    if domain.startswith("www."):
-        domain = domain[4:]
-    if "." not in domain or len(domain) < 4:
-        raise HTTPException(status_code=400, detail="Invalid domain")
+async def predict(url: str = Query(...), domain: str = Query(None)):
+    # Accept either ?url= (full URL) or legacy ?domain= (bare hostname)
+    raw = url if url else (f"http://{domain}/" if domain else "")
+    raw = raw.strip()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Provide url or domain parameter")
+    if "://" not in raw:
+        raw = "http://" + raw
+    host = get_hostname(raw)
+    if not host or "." not in host or len(host) < 4:
+        raise HTTPException(status_code=400, detail="Invalid URL or domain")
 
-    cached = _cache_get(_predict_cache, domain)
+    cached = _cache_get(_predict_cache, raw)
     if cached:
         return cached
 
+    if is_known_safe(raw):
+        result = _safe_payload(raw)
+        result["cached"] = False
+        _cache_set(_predict_cache, raw, result, PREDICT_TTL)
+        return result
+
     feat, rf_conf, xgb_conf = await run_in_threadpool(
-        run_inference, domain, state.top100_slds,
+        run_inference, raw,
         state.rf_clf, state.rf_thr, state.xgb_clf, state.xgb_thr,
     )
 
     rf_label  = "malicious" if rf_conf  >= state.rf_thr  else "benign"
     xgb_label = "malicious" if xgb_conf >= state.xgb_thr else "benign"
     max_conf  = max(rf_conf, xgb_conf)
-    ml_tier   = risk_tier(max_conf)
+    ml_tier   = risk_tier(max_conf, get_tld(host))
 
     avg_imp = {f: float(state.rf_imps[f] + state.xgb_imps[f]) / 2 for f in FEATURE_COLS}
     features = [
@@ -218,7 +250,8 @@ async def predict(domain: str = Query(...)):
     whois_eligible = max_conf >= WHOIS_BAND_LO
 
     result = {
-        "domain":          domain,
+        "url":             raw,
+        "domain":          host,
         "rf_conf":         round(rf_conf, 4),
         "rf_label":        rf_label,
         "rf_threshold":    state.rf_thr,
@@ -232,34 +265,39 @@ async def predict(domain: str = Query(...)):
         "whois_eligible":  whois_eligible,
         "cached":          False,
     }
-    _cache_set(_predict_cache, domain, result, PREDICT_TTL)
+    _cache_set(_predict_cache, raw, result, PREDICT_TTL)
     return result
 
 
 @app.get("/whois")
-async def whois_lookup(domain: str = Query(...)):
-    domain = domain.strip().lower()
-    if domain.startswith("www."):
-        domain = domain[4:]
-    if "." not in domain or len(domain) < 4:
-        raise HTTPException(status_code=400, detail="Invalid domain")
+async def whois_lookup(url: str = Query(...), domain: str = Query(None)):
+    raw = url if url else (f"http://{domain}/" if domain else "")
+    raw = raw.strip()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Provide url or domain parameter")
+    if "://" not in raw:
+        raw = "http://" + raw
+    host = get_hostname(raw)
+    if not host or "." not in host or len(host) < 4:
+        raise HTTPException(status_code=400, detail="Invalid URL or domain")
 
-    cached = _cache_get(_whois_cache, domain)
+    cached = _cache_get(_whois_cache, raw)
     if cached:
         return cached
 
     feat, rf_conf, xgb_conf = await run_in_threadpool(
-        run_inference, domain, state.top100_slds,
+        run_inference, raw,
         state.rf_clf, state.rf_thr, state.xgb_clf, state.xgb_thr,
     )
     max_conf = max(rf_conf, xgb_conf)
-    ml_tier  = risk_tier(max_conf)
+    ml_tier  = risk_tier(max_conf, get_tld(host))
 
-    wf = await run_in_threadpool(whois_features, domain)
+    wf = await run_in_threadpool(whois_features, raw)
     final_tier, reasons = adjust_tier(ml_tier, wf)
 
     result = {
-        "domain":                 domain,
+        "url":                    raw,
+        "domain":                 host,
         "available":              wf.get("available", False),
         "domain_age_days":        wf.get("domain_age_days"),
         "has_privacy_protection": wf.get("has_privacy_protection"),
@@ -269,7 +307,7 @@ async def whois_lookup(domain: str = Query(...)):
         "final_tier":             final_tier,
         "reasons":                reasons,
     }
-    _cache_set(_whois_cache, domain, result, WHOIS_TTL)
+    _cache_set(_whois_cache, raw, result, WHOIS_TTL)
     return result
 
 

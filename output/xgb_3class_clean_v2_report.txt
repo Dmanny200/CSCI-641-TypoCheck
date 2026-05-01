@@ -1,0 +1,29 @@
+=================================================================
+  XGBoost — 3-Class Evaluation Report
+=================================================================
+  Accuracy: 0.9239
+
+  3-class Confusion Matrix [XGBoost]
+  (rows = actual, cols = predicted)
+                         Pred Benign  Pred Phishing  Pred Typo/DGA
+  -----------------------------------------------------------------
+  Actual Benign           27,376            275            310
+  Actual Phishing            722          7,751              6
+  Actual Typo/DGA          1,725              0          1,780
+
+  Per-class recall:
+    Benign          97.9%
+    Phishing        91.4%
+    Typo/DGA        50.8%
+
+                precision    recall  f1-score   support
+  
+        Benign       0.92      0.98      0.95     27961
+      Phishing       0.97      0.91      0.94      8479
+      Typo/DGA       0.85      0.51      0.64      3505
+  
+      accuracy                           0.92     39945
+     macro avg       0.91      0.80      0.84     39945
+  weighted avg       0.92      0.92      0.92     39945
+
+=================================================================

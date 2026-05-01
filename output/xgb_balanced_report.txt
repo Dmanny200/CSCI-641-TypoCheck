@@ -3,88 +3,96 @@
 ============================================================
 
   [Default threshold = 0.50]
-  Accuracy  : 0.7963
-  Precision : 0.8522  (malicious class)
-  Recall    : 0.7166  (malicious class)
-  F1 Score  : 0.7785  (malicious class)
+  Accuracy  : 0.8700
+  Precision : 0.9088  (malicious class)
+  Recall    : 0.8225  (malicious class)
+  F1 Score  : 0.8635  (malicious class)
 
   Classification Report
   ----------------------------------------
                 precision    recall  f1-score   support
   
-        benign       0.76      0.88      0.81       862
-     malicious       0.85      0.72      0.78       861
+        benign       0.84      0.92      0.88     54846
+     malicious       0.91      0.82      0.86     54846
   
-      accuracy                           0.80      1723
-     macro avg       0.80      0.80      0.79      1723
-  weighted avg       0.80      0.80      0.79      1723
+      accuracy                           0.87    109692
+     macro avg       0.87      0.87      0.87    109692
+  weighted avg       0.87      0.87      0.87    109692
 
   Confusion Matrix (rows=actual, cols=predicted)
   ----------------------------------------
                  Pred benign  Pred malicious
-  Actual benign          755             107
-  Actual malicious       244             617
+  Actual benign        50321            4525
+  Actual malicious      9734           45112
 
 ------------------------------------------------------------
-  Tuned threshold = 0.65
+  Tuned threshold = 0.55
   (selected to maximise F1 on the benign class on the validation set)
 ------------------------------------------------------------
 
-  [Tuned threshold = 0.65]
-  Accuracy  : 0.7957
-  Precision : 0.9072  (malicious class)
-  Recall    : 0.6585  (malicious class)
-  F1 Score  : 0.7631  (malicious class)
+  [Tuned threshold = 0.55]
+  Accuracy  : 0.8697
+  Precision : 0.9227  (malicious class)
+  Recall    : 0.8069  (malicious class)
+  F1 Score  : 0.8609  (malicious class)
 
   Classification Report
   ----------------------------------------
                 precision    recall  f1-score   support
   
-        benign       0.73      0.93      0.82       862
-     malicious       0.91      0.66      0.76       861
+        benign       0.83      0.93      0.88     54846
+     malicious       0.92      0.81      0.86     54846
   
-      accuracy                           0.80      1723
-     macro avg       0.82      0.80      0.79      1723
-  weighted avg       0.82      0.80      0.79      1723
+      accuracy                           0.87    109692
+     macro avg       0.88      0.87      0.87    109692
+  weighted avg       0.88      0.87      0.87    109692
 
   Confusion Matrix (rows=actual, cols=predicted)
   ----------------------------------------
                  Pred benign  Pred malicious
-  Actual benign          804              58
-  Actual malicious       294             567
+  Actual benign        51141            3705
+  Actual malicious     10591           44255
 
 ============================================================
   Threshold Sweep (validation set, benign-class metrics)
 ============================================================
   Threshold  Prec(ben)  Rec(ben)  F1(ben)     FPR
   ------------------------------------------------
-       0.30     0.7839    0.6992   0.7391  0.3008
-       0.35     0.7818    0.7700   0.7759  0.2300
-       0.40     0.7726    0.8130   0.7923  0.1870
-       0.45     0.7575    0.8560   0.8037  0.1440
-       0.50     0.7483    0.8734   0.8060  0.1266
-       0.55     0.7411    0.8908   0.8091  0.1092
-       0.60     0.7285    0.9129   0.8103  0.0871
-       0.65     0.7211    0.9280   0.8116  0.0720 <-- tuned
-       0.70     0.7104    0.9373   0.8082  0.0627
-       0.75     0.7057    0.9443   0.8077  0.0557
-       0.80     0.7001    0.9570   0.8086  0.0430
-       0.85     0.6947    0.9698   0.8095  0.0302
-       0.90     0.6871    0.9768   0.8067  0.0232
+       0.30     0.8775    0.8056   0.8400  0.1944
+       0.35     0.8676    0.8444   0.8558  0.1556
+       0.40     0.8581    0.8752   0.8666  0.1248
+       0.45     0.8486    0.9000   0.8736  0.1000
+       0.50     0.8384    0.9183   0.8765  0.0817
+       0.55     0.8291    0.9331   0.8781  0.0669 <-- tuned
+       0.60     0.8172    0.9449   0.8764  0.0551
+       0.65     0.8044    0.9545   0.8730  0.0455
+       0.70     0.7898    0.9638   0.8682  0.0362
+       0.75     0.7715    0.9719   0.8602  0.0281
+       0.80     0.7501    0.9794   0.8495  0.0206
+       0.85     0.7230    0.9865   0.8344  0.0135
+       0.90     0.6868    0.9916   0.8116  0.0084
 
 ============================================================
   Feature Importances (high -> low)
   ----------------------------------------
-   1. subdomain_count            0.4113  ########################
-   2. domain_length              0.1999  ###########
-   3. non_alnum_count            0.0599  ###
-   4. digit_count                0.0552  ###
-   5. min_lev_distance           0.0513  ###
-   6. char_continuity_rate       0.0445  ##
-   7. digit_ratio                0.0384  ##
-   8. tld_risk_score             0.0373  ##
-   9. entropy                    0.0366  ##
-  10. vowel_consonant_ratio      0.0345  ##
-  11. hyphen_count               0.0312  #
+   1. tld_risk_score             0.1996  ###########
+   2. path_length                0.1074  ######
+   3. path_entropy               0.1009  ######
+   4. subdomain_count            0.0736  ####
+   5. has_query                  0.0553  ###
+   6. url_length                 0.0507  ###
+   7. min_lev_distance           0.0468  ##
+   8. non_alnum_count            0.0402  ##
+   9. domain_length              0.0401  ##
+  10. query_length               0.0388  ##
+  11. path_depth                 0.0385  ##
+  12. at_in_url                  0.0378  ##
+  13. char_continuity_rate       0.0319  #
+  14. hyphen_count               0.0312  #
+  15. digit_count                0.0287  #
+  16. digit_ratio                0.0252  #
+  17. entropy                    0.0208  #
+  18. vowel_consonant_ratio      0.0204  #
+  19. double_slash_in_path       0.0122  
 
 ============================================================

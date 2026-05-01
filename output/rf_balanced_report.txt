@@ -3,27 +3,27 @@
 ============================================================
 
   [Default threshold = 0.50]
-  Accuracy  : 0.7916
-  Precision : 0.8476  (malicious class)
-  Recall    : 0.7108  (malicious class)
-  F1 Score  : 0.7732  (malicious class)
+  Accuracy  : 0.8878
+  Precision : 0.9165  (malicious class)
+  Recall    : 0.8534  (malicious class)
+  F1 Score  : 0.8838  (malicious class)
 
   Classification Report
   ----------------------------------------
                 precision    recall  f1-score   support
   
-        benign       0.75      0.87      0.81       862
-     malicious       0.85      0.71      0.77       861
+        benign       0.86      0.92      0.89     54846
+     malicious       0.92      0.85      0.88     54846
   
-      accuracy                           0.79      1723
-     macro avg       0.80      0.79      0.79      1723
-  weighted avg       0.80      0.79      0.79      1723
+      accuracy                           0.89    109692
+     macro avg       0.89      0.89      0.89    109692
+  weighted avg       0.89      0.89      0.89    109692
 
   Confusion Matrix (rows=actual, cols=predicted)
   ----------------------------------------
                  Pred benign  Pred malicious
-  Actual benign          752             110
-  Actual malicious       249             612
+  Actual benign        50580            4266
+  Actual malicious      8039           46807
 
 ------------------------------------------------------------
   Tuned threshold = 0.55
@@ -31,60 +31,68 @@
 ------------------------------------------------------------
 
   [Tuned threshold = 0.55]
-  Accuracy  : 0.7963
-  Precision : 0.8829  (malicious class)
-  Recall    : 0.6829  (malicious class)
-  F1 Score  : 0.7701  (malicious class)
+  Accuracy  : 0.8880
+  Precision : 0.9322  (malicious class)
+  Recall    : 0.8368  (malicious class)
+  F1 Score  : 0.8819  (malicious class)
 
   Classification Report
   ----------------------------------------
                 precision    recall  f1-score   support
   
-        benign       0.74      0.91      0.82       862
-     malicious       0.88      0.68      0.77       861
+        benign       0.85      0.94      0.89     54846
+     malicious       0.93      0.84      0.88     54846
   
-      accuracy                           0.80      1723
-     macro avg       0.81      0.80      0.79      1723
-  weighted avg       0.81      0.80      0.79      1723
+      accuracy                           0.89    109692
+     macro avg       0.89      0.89      0.89    109692
+  weighted avg       0.89      0.89      0.89    109692
 
   Confusion Matrix (rows=actual, cols=predicted)
   ----------------------------------------
                  Pred benign  Pred malicious
-  Actual benign          784              78
-  Actual malicious       273             588
+  Actual benign        51508            3338
+  Actual malicious      8952           45894
 
 ============================================================
   Threshold Sweep (validation set, benign-class metrics)
 ============================================================
   Threshold  Prec(ben)  Rec(ben)  F1(ben)     FPR
   ------------------------------------------------
-       0.30     0.8026    0.6376   0.7107  0.3624
-       0.35     0.7918    0.7154   0.7517  0.2846
-       0.40     0.7790    0.7944   0.7867  0.2056
-       0.45     0.7644    0.8328   0.7971  0.1672
-       0.50     0.7560    0.8815   0.8139  0.1185
-       0.55     0.7371    0.9117   0.8152  0.0883 <-- tuned
-       0.60     0.7206    0.9315   0.8126  0.0685
-       0.65     0.7087    0.9524   0.8127  0.0476
-       0.70     0.6981    0.9617   0.8090  0.0383
-       0.75     0.6919    0.9756   0.8096  0.0244
-       0.80     0.6840    0.9803   0.8057  0.0197
-       0.85     0.6762    0.9872   0.8026  0.0128
-       0.90     0.6664    0.9954   0.7983  0.0046
+       0.30     0.8994    0.8016   0.8477  0.1984
+       0.35     0.8911    0.8441   0.8670  0.1559
+       0.40     0.8826    0.8771   0.8798  0.1229
+       0.45     0.8728    0.9029   0.8876  0.0971
+       0.50     0.8626    0.9235   0.8920  0.0765
+       0.55     0.8522    0.9399   0.8939  0.0601 <-- tuned
+       0.60     0.8402    0.9528   0.8930  0.0472
+       0.65     0.8261    0.9631   0.8894  0.0369
+       0.70     0.8105    0.9727   0.8842  0.0273
+       0.75     0.7917    0.9803   0.8759  0.0197
+       0.80     0.7703    0.9868   0.8652  0.0132
+       0.85     0.7433    0.9925   0.8500  0.0075
+       0.90     0.7105    0.9966   0.8296  0.0034
 
 ============================================================
   Feature Importances (high -> low)
   ----------------------------------------
-   1. domain_length              0.2260  #############
-   2. entropy                    0.2238  #############
-   3. subdomain_count            0.1182  #######
-   4. min_lev_distance           0.1169  #######
-   5. vowel_consonant_ratio      0.0948  #####
-   6. char_continuity_rate       0.0657  ###
-   7. digit_count                0.0390  ##
-   8. digit_ratio                0.0369  ##
-   9. tld_risk_score             0.0345  ##
-  10. non_alnum_count            0.0270  #
-  11. hyphen_count               0.0172  #
+   1. path_length                0.1550  #########
+   2. path_entropy               0.1305  #######
+   3. url_length                 0.1263  #######
+   4. entropy                    0.0897  #####
+   5. min_lev_distance           0.0740  ####
+   6. tld_risk_score             0.0721  ####
+   7. vowel_consonant_ratio      0.0618  ###
+   8. char_continuity_rate       0.0566  ###
+   9. domain_length              0.0516  ###
+  10. query_length               0.0405  ##
+  11. subdomain_count            0.0394  ##
+  12. path_depth                 0.0333  #
+  13. digit_count                0.0162  
+  14. has_query                  0.0158  
+  15. digit_ratio                0.0147  
+  16. non_alnum_count            0.0113  
+  17. hyphen_count               0.0102  
+  18. at_in_url                  0.0008  
+  19. double_slash_in_path       0.0002  
 
 ============================================================

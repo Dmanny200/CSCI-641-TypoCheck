@@ -1,8 +1,9 @@
 """
-predict.py  —  CLI domain checker
+predict.py  —  CLI URL checker
 
 Usage:
-    python scripts/predict.py google.com
+    python scripts/predict.py https://google.com/
+    python scripts/predict.py http://gooogle.com/ --whois
     python scripts/predict.py gooogle.com --whois
 """
 
@@ -11,7 +12,6 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -19,12 +19,11 @@ sys.path.insert(0, str(ROOT))
 from domain_checker import (
     FEATURE_COLS, WHOIS_BAND_LO,
     load_model, extract_features, risk_tier,
-    whois_features, adjust_tier, get_sld,
+    whois_features, adjust_tier, get_hostname,
 )
 
-RF_MODEL     = ROOT / "models" / "random_forest.joblib"
-XGB_MODEL    = ROOT / "models" / "xgboost.joblib"
-FEATURES_CSV = ROOT / "data"   / "features.csv"
+RF_MODEL  = ROOT / "models" / "random_forest_clean.joblib"
+XGB_MODEL = ROOT / "models" / "xgboost_clean.joblib"
 
 TIER_FMT = {"ALLOW": "[  ALLOW  ]", "WARNING": "[WARNING  ]", "BLOCK": "[ BLOCK!! ]"}
 W = 60
@@ -32,24 +31,21 @@ W = 60
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("domain")
+    parser.add_argument("url", help="Full URL or bare hostname to check")
     parser.add_argument(
         "--whois", action="store_true",
-        help="Run a WHOIS lookup when the domain is flagged malicious or confidence is uncertain"
+        help="Run a WHOIS lookup when the URL is flagged malicious or confidence is uncertain"
     )
     args = parser.parse_args()
 
-    domain = args.domain.strip().lower()
-    if domain.startswith("www."):
-        domain = domain[4:]
-
-    df = pd.read_csv(FEATURES_CSV, dtype=str)
-    top100_slds = [get_sld(d) for d in df[df["source"] == "tranco_top10k"]["domain"].head(100)]
+    url = args.url.strip()
+    if "://" not in url:
+        url = "http://" + url
 
     rf_clf,  rf_thr  = load_model(RF_MODEL)
     xgb_clf, xgb_thr = load_model(XGB_MODEL)
 
-    feat = extract_features(domain, top100_slds)
+    feat = extract_features(url)
     X    = np.array([[feat[col] for col in FEATURE_COLS]])
 
     rf_conf  = float(rf_clf.predict_proba(X)[0][1])
@@ -57,8 +53,11 @@ def main():
     max_conf = max(rf_conf, xgb_conf)
     ml_tier  = risk_tier(max_conf)
 
+    host = get_hostname(url)
+
     print(f"\n{'=' * W}")
-    print(f"  Domain: {domain}")
+    print(f"  URL:    {url}")
+    print(f"  Domain: {host}")
     print(f"{'=' * W}")
     print(f"  {'Model':<20}  {'Label':<12}  {'Conf':>6}  {'Threshold':>9}")
     print(f"  {'-' * (W - 2)}")
@@ -83,8 +82,8 @@ def main():
     final_tier = ml_tier
 
     if args.whois and whois_eligible:
-        print(f"\n  Running WHOIS lookup for {domain} ...")
-        wf = whois_features(domain)
+        print(f"\n  Running WHOIS lookup for {host} ...")
+        wf = whois_features(url)
         final_tier, reasons = adjust_tier(ml_tier, wf)
 
         print(f"\n  {'=' * (W - 2)}")
